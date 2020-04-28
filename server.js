@@ -65,6 +65,8 @@ let hasScheduleNSP2 = false;
 let task = null;
 nsp2.on("connection", (client) => {
   console.log("user connected /12345");
+  nsp2.emit("new-message", new Date());
+
   // console.log(nsp2);
   // console.log(client.nsp.connected);
 
