@@ -20,15 +20,28 @@ const socketServer = (app) => {
   //     io.sockets.emit("new-message", message);
   //   });
   // });
-
+  let hasScheduleNSP1 = false;
+  let task1 = null;
   nsp.on("connection", (client) => {
     console.log("user connected /my-namespace");
-    console.log(nsp);
+    // console.log(nsp);
+    nsp.emit("new-message", new Date());
     let amountConn = Object.keys(nsp.sockets).length;
     console.log(
       "/my-namespace Count connections in this nsp ====> ",
       amountConn
     );
+
+    if (!hasScheduleNSP1) {
+      console.log(" Start task NSP /my-namespace");
+
+      task1 = cron.schedule("0-59/5 * * * * *", () => {
+        console.log("running NSP1 : ", new Date());
+        nsp.emit("new-message", new Date());
+      });
+      hasScheduleNSP1 = true;
+    }
+
     // เมื่อ Client ตัดการเชื่อมต่อ
     client.on("disconnect", () => {
       console.log("user disconnected /my-namespace");
@@ -37,6 +50,11 @@ const socketServer = (app) => {
         "/my-namespace Count connections in this nsp ====> ",
         amountConn
       );
+      if (!amountConn) {
+        task1.destroy();
+        console.log(" Destroy task NSP /my-namespace");
+        hasScheduleNSP1 = false;
+      }
     });
 
     // ส่งข้อมูลไปยัง Client ทุกตัวที่เขื่อมต่อแบบ Realtime
@@ -58,7 +76,7 @@ const socketServer = (app) => {
       console.log(" Start task NSP /12345");
 
       task = cron.schedule("0-59/5 * * * * *", () => {
-        console.log("running a task every five seconds : ", new Date());
+        console.log("running NSP2 : ", new Date());
         nsp2.emit("new-message", new Date());
       });
       hasScheduleNSP2 = true;
